@@ -95,47 +95,47 @@ server.post("/api/posts", (req, res) => {
 
 // POST /api/posts/:id/comments
 
-// server.post("/api/posts/:id/comments", (req, res) => {
-//   const postId = req.params.id;
-//   const commentInfo = req.body;
-//   commentInfo.id = postId;
+server.post("/api/posts/:id/comments", (req, res) => {
+  const postId = req.params.id;
+  const commentInfo = req.body;
 
-//   Posts.findById(postId)
+  Posts.findById(postId)
 
-//     .then(post => {
-//       if (post.length !== 0) {
-//         if (commentInfo.text) {
-//           Posts.insertComment(commentInfo)
-//             .then(comment => {
-//               res.status(201).json(comment);
-//             })
-//             .catch(err => {
-//               console.log(commentInfo.text);
-//               res
-//                 .status(500)
-//                 .json({
-//                   error:
-//                     "There was an error while saving the post to the database"
-//                 });
-//             });
-//         } else {
-//           res
-//             .status(400)
-//             .json({ errorMessage: "Please provide text for the comment." });
-//         }
-//       } else {
-//         res
-//           .status(404)
-//           .json({ message: "The post with the specified ID does not exist." });
-//       }
-//     })
+    .then(post => {
+      if (post.length !== 0) {
+        if (commentInfo.text) {
+          Posts.insertComment(commentInfo)
+            .then(comment => {
+              res.status(201).json(comment);
+            })
+            .catch(err => {
+              console.log(commentInfo.text);
+              res
+                .status(500)
+                .json({
+                  error:
+                    "There was an error while saving the post to the database"
+                });
+            });
+        } else {
+          res
+            .status(400)
+            .json({ errorMessage: "Please provide text for the comment." });
+        }
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      }
+    })
 
-//     .catch(err => {
-//       res
-//         .status(404)
-//         .json({ message: "The post with the specified ID does not exist." });
-//     });
-// });
+    .catch(err => {
+      res
+        .status(500)
+        .json({ error: "There was an error while saving the comment to the database" });
+    });
+});
+
 
 // DELETE /api/posts/:id
 
@@ -143,21 +143,48 @@ server.delete('/api/posts/:id', (req, res) => {
     const postId = req.params.id;
 
     Posts.remove(postId)
-    .then(post => {
-        if(post) {
-            res.status(200).json(post);
+    .then(deleted => {
+        if(deleted) {
+            res.status(200).json(deleted);
         } else {
             res.status(404).json({ message: "The post with the specified ID does not exist." })
         }
 
     })
     .catch(err => {
-        res.status(404).json({ message: "The post with the specified ID does not exist." })
+        res.status(500).json({ error: 'The post could not be removed' })
     })
 
 })
 
+// PUT /api/posts/:id
 
+server.put('/api/posts/:id', (req, res) => {
+    const postId = req.params.id;
+    const changes = req.body;
+
+    Posts.findById(postId)
+    .then(post => {
+        if (post.length !== 0) {
+            if (!changes.title || !changes.contents) {
+                res.status(400).json({ errorMessage: "Please provide title and contents for the post." })
+            } else {
+                Posts.update(postId, changes)
+                .then(post => {
+                    res.status(200).json(post);
+                })
+                .catch(err => {
+                    res.status(500).json({ error: "The post information could not be modified." })
+                })
+            }
+        } else {
+            res.status(404).json({ message: "The post with the specified ID does not exist." })
+        }
+    })
+    .catch(err => {
+        res.status(404).json({ message: "The post with the specified ID does not exist." })
+    })
+})
 
 
 module.exports = server;
