@@ -19,6 +19,59 @@ server.get("/api/posts", (req, res) => {
     });
 });
 
+// GET /api/posts/:id
+
+server.get("/api/posts/:id", (req, res) => {
+  const postId = req.params.id;
+
+  Posts.findById(postId)
+    .then(post => {
+      if (post.length === 0) {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      } else {
+        res.status(200).json(post);
+      }
+    })
+    .catch(err => {
+      res
+        .status(404)
+        .json({ message: "The post with the specified ID does not exist." });
+    });
+});
+
+// GET /api/posts/:id/comments
+server.get("/api/posts/:id/comments", (req, res) => {
+  const postId = req.params.id;
+
+  Posts.findById(postId)
+    .then(post => {
+      if (post.length !== 0) {
+        Posts.findPostComments(postId)
+          .then(comments => {
+            res.status(200).json(comments);
+          })
+          .catch(err => {
+            res
+              .status(500)
+              .json({
+                error: "The comments information could not be retrieved."
+              });
+          });
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      }
+    })
+    .catch(err => {
+      res
+        .status(404)
+        .json({ message: "The post with the specified ID does not exist." });
+    });
+});
+
 // POST /api/posts
 server.post("/api/posts", (req, res) => {
   const post = req.body;
@@ -42,67 +95,69 @@ server.post("/api/posts", (req, res) => {
 
 // POST /api/posts/:id/comments
 
-// server.post('/api/posts/:id/comments', (req, res) => {
-//     const postId = req.params.id;
-//     const commentInfo = req.body;
+// server.post("/api/posts/:id/comments", (req, res) => {
+//   const postId = req.params.id;
+//   const commentInfo = req.body;
+//   commentInfo.id = postId;
 
-//     server.post('/api/posts/:id/comments', (req, res) => {
-//             Posts.findById(postId)
-//             .then(post => {
-//                 if(post.length !== 0) {
-                    
-//                 }
+//   Posts.findById(postId)
+
+//     .then(post => {
+//       if (post.length !== 0) {
+//         if (commentInfo.text) {
+//           Posts.insertComment(commentInfo)
+//             .then(comment => {
+//               res.status(201).json(comment);
 //             })
 //             .catch(err => {
-//                 res.status(404).json({ message: "The post with the specified ID does not exist." });
-//             })
-        
+//               console.log(commentInfo.text);
+//               res
+//                 .status(500)
+//                 .json({
+//                   error:
+//                     "There was an error while saving the post to the database"
+//                 });
+//             });
+//         } else {
+//           res
+//             .status(400)
+//             .json({ errorMessage: "Please provide text for the comment." });
+//         }
+//       } else {
+//         res
+//           .status(404)
+//           .json({ message: "The post with the specified ID does not exist." });
+//       }
 //     })
-// })
 
+//     .catch(err => {
+//       res
+//         .status(404)
+//         .json({ message: "The post with the specified ID does not exist." });
+//     });
+// });
 
-// GET /api/posts/:id
+// DELETE /api/posts/:id
 
-server.get('/api/posts/:id', (req, res) => {
+server.delete('/api/posts/:id', (req, res) => {
     const postId = req.params.id;
 
-    Posts.findById(postId)
+    Posts.remove(postId)
     .then(post => {
-        if(post.length === 0) {
-            res.status(404).json({ message: "The post with the specified ID does not exist." });
-        } else {
+        if(post) {
             res.status(200).json(post);
-        }
-    })
-    .catch(err => {
-        res.status(404).json({ message: "The post with the specified ID does not exist." });
-    })
-})
-
-
-// GET /api/posts/:id/comments
-server.get('/api/posts/:id/comments', (req, res) => {
-    const postId = req.params.id;
-
-    Posts.findById(postId)
-    .then(post => {
-        if(post.length !== 0) {
-            Posts.findPostComments(postId)
-            .then(comments => {
-                res.status(200).json(comments)
-            })
-            .catch(err => {
-                res.status(500).json({ error: "The comments information could not be retrieved." });
-            })
         } else {
-            res.status(404).json({ message: "The post with the specified ID does not exist." });
+            res.status(404).json({ message: "The post with the specified ID does not exist." })
         }
-    })
-    .catch(err => {
-        res.status(404).json({ message: "The post with the specified ID does not exist." });
 
     })
+    .catch(err => {
+        res.status(404).json({ message: "The post with the specified ID does not exist." })
+    })
+
 })
+
+
 
 
 module.exports = server;
