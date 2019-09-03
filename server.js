@@ -87,7 +87,13 @@ server.get('/api/posts/:id/comments', (req, res) => {
     Posts.findById(postId)
     .then(post => {
         if(post.length !== 0) {
-            res.status(200).json(post);
+            Posts.findPostComments(postId)
+            .then(comments => {
+                res.status(200).json(comments)
+            })
+            .catch(err => {
+                res.status(500).json({ error: "The comments information could not be retrieved." });
+            })
         } else {
             res.status(404).json({ message: "The post with the specified ID does not exist." });
         }
