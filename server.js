@@ -100,16 +100,10 @@ server.post('/api/posts/:id/comments', (req, res) => {
     if (!commentInfo.text) {
         res.status(400).json({ errorMessage: "Please provide text for the comment." })
     } else {
-        Posts.findById(postId)
-        .then(post => {
-            if (post) {
-                Posts.insertComment(commentInfo)
-                .then(comment => {
-                    res.status(201).json(comment)
-                })
-                .catch(err => {
-                    res.status(500).json({ error: "There was an error while saving the comment to the database" });
-                })
+        Posts.insertComment({ ...commentInfo, post_id: postId })
+        .then(comment => {
+            if (comment) {
+                res.status(201).json(comment);
             } else {
                 res.status(404).json({ message: "The post with the specified ID does not exist." });
             }
@@ -118,10 +112,8 @@ server.post('/api/posts/:id/comments', (req, res) => {
             res.status(500).json({ error: "There was an error while saving the comment to the database" });
 
         })
-    }
 
-
-})
+}})
 
 // DELETE /api/posts/:id
 
